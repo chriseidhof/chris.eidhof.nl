@@ -1,0 +1,315 @@
+date: 18-02-2012
+title: Accessing an API using CoreData's NSIncrementalStore
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p><em>Note: I&#8217;ve also posted this article on github as gist, for better readability of the code: <a href="https://gist.github.com/1860108">nsincrementalstore.markdown</a>.</em></p>
+
+<p>In this article, we will see how to use Core Data for accessing your API.
+We will use the Bandcamp API as our running example. I&#8217;ve only been
+experimenting with this code for a few days, so there might be mistakes in
+there.</p>
+
+<p>One of the problems with accessing an API is that you typically have API calls
+everywhere in your code. If the API changes, there are probably multiple spots
+in your code that you have to change too.
+Your code knows about the structure of the API results in lots of places,
+for example, in the <a href="http://bandcamp.com/developer">Bandcamp API</a> there is a <a href="http://bandcamp.com/developer#track"><code>track</code></a> entity which
+has the property <code>title</code>. It would be easy to pass the API results around as an
+NSDictionary and lookup the title key in that dictionary. However, if they would
+change it to <code>songtitle</code>, you have to find this everywhere in your code.</p>
+
+<p>Another problem is that most APIs are not object oriented. Suppose you have an
+<code>Album</code> entity that has a to-many relationship with a <code>Track</code> entity: each album can
+have multiple tracks. In your controller, you will probably have multiple API
+calls, one for getting the album and another for getting its tracks.</p>
+
+<p>By using a new feature in Core Data we can solve these problems by adding
+another layer on top of the API which allows us to access the API as if it
+were an object graph. Entities can be concrete subclasses of <code>NSManagedObject</code>.</p>
+
+<p>First, we will build a regular class that accesses the API and parses the JSON.
+Then, we will create a CoreData data model that represents the API in an
+object-oriented way. Finally, we will create an <code>NSIncrementalStore</code>
+subclass and implement the necessary methods to fetch the entities and relationships.</p>
+
+<p><strong>Step 1: Wrap the API</strong></p>
+
+<p>The first step is to create a simple class that implements your API. Doing this
+is straightforward, and I will not go into details here. This is the header file
+for the Bandcamp API:</p>
+
+<pre><code>@interface BandCampAPI : NSObject
++ (NSArray*)apiRequestEntitiesWithName:(NSString*)name 
+                             predicate:(NSPredicate*)predicate;
++ (NSArray*)apiDiscographyForBandWithId:(NSString*)bandId;
+@end
+</code></pre>
+
+<p>In summary, you can search for bands, get a band by id, get an album by id, get
+a track by id. If you request the info for an album, you also get a list of its
+tracks included in the response. Finally, there is a method for getting the
+discography of a band.</p>
+
+<p>To find all bands named &#8220;Rue Royale&#8221; we can do the following API call:</p>
+
+<pre><code>NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name == %@", @"Rue Royale"];
+NSArray* bands = [BandCampAPI apiRequestEntitiesWithName:@"Band"
+                                               predicate:predicate];
+</code></pre>
+
+<p>This will return an <code>NSArray</code> with an <code>NSDictionary</code> for each found band. Please
+have a look at the <a href="https://github.com/chriseidhof/NSIncrementalStore-Test-Project/blob/master/IncrementalStoreTest/BandCampAPI.m">source</a> to see how it is implemented. The result is as following:</p>
+
+<pre><code>({
+    "band_id" = 4246760315;
+    name = "Rue Royale";
+    "offsite_url" = "http://rueroyalemusic.com";
+    subdomain = rueroyale;
+    url = "http://rueroyale.bandcamp.com";
+})
+</code></pre>
+
+<p>The discography call looks like this:</p>
+
+<pre><code>NSString* sideditchId = [NSString stringWithFormat:@"2721182224"];
+NSArray* albums = [BandCampAPI apiDiscographyForBandWithId:sideditchId];
+</code></pre>
+
+<p>And the result like this:</p>
+
+<pre><code>({
+    "album_id" = 3366378415;
+    artist = Sideditch;
+    "band_id" = 2721182224;
+    downloadable = 1;
+    "large_art_url" = "http://f0.bcbits.com/z/70/81/70810089-1.jpg";
+    "release_date" = 1267401600;
+    "small_art_url" = "http://f0.bcbits.com/z/37/58/3758272301-1.jpg";
+    title = "Mary, Me Demo";
+    url = "http://sideditch.bandcamp.com/album/mary-me-demo?pk=191";
+})
+</code></pre>
+
+<p>Now that we have access to the raw API, we can continue by making an
+object-oriented version of the API.</p>
+
+<p><strong>Step 2: Define the model</strong></p>
+
+<p>The next step is to create a new CoreData data model. For each API entity, we create a
+corresponding CoreData entity (named <code>Band</code>, <code>Album</code> and <code>Track</code>). There are properties for
+all of the entities, and more importantly: relationships between the entities.
+For example, the <code>Album</code> entity has a relationship <code>tracks</code> which is a to-many
+relationship to the <code>Track</code> entity. Creating this data model is exactly the same
+as creating a normal CoreData data model.</p>
+
+<p>In this project, I&#8217;ve reused all the keys that Bandcamp uses. For example, an
+album has a key <code>large_art_url</code>, so our entity has a key like that as well.
+However, this is not necessary. We can name the keys anything we want, we just
+have to make sure that we convert them in our <code>NSIncrementalStore</code> subclass.</p>
+
+<p><strong>Step 3: implement the <code>NSIncrementalStore</code> methods</strong></p>
+
+<p>Now the hard bit: creating a subclass of <code>NSIncrementalStore</code>. There is a
+really interesting article by <a href="http://sealedabstract.com/code/nsincrementalstore-the-future-of-web-services-in-ios-mac-os-x/">Drew Crawford</a> about how to do this. However, it lacks a
+concrete example. I created a subclass <code>BandCampIS</code> of <code>NSIncrementalStore</code>. In
+the documentation, you can see which methods to implement. We will start with
+<code>executeRequest:withContext:error:</code>. This method is called for multiple
+purposes, but we will now focus on only one case: when it&#8217;s called with an
+<code>NSFetchRequest</code>.</p>
+
+<p>The first argument is of type <code>NSPersistentStoreRequest</code> which is the request we have to act upon. 
+By inspecting its <code>requestType</code> we can turn it into a specific subclass, such as <code>NSFetchRequest</code>. For clarity, the handling code is factored out into a method <code>fetchObjects:withContext</code>, which we will define later.</p>
+
+<pre><code>- (id)executeRequest:(NSPersistentStoreRequest*)request 
+         withContext:(NSManagedObjectContext*)context 
+               error:(NSError**)error {
+    if(request.requestType == NSFetchRequestType)
+    {
+        NSFetchRequest *fetchRequest = (NSFetchRequest*) request;
+        if (fetchRequest.resultType==NSManagedObjectResultType) {
+            return [self fetchObjects:fetchRequest 
+                          withContext:context];
+        }
+    }
+    return nil;
+}
+</code></pre>
+
+<p>The <code>fetchObjects:withContext</code> method should return an <code>NSArray</code> containing <code>NSManagedObject</code> items.
+In the <code>fetchObjects:withContext</code> method, we call the appropriate API method, and
+get back an <code>NSArray</code> with an <code>NSDictionary</code> for each item. For each item, we
+create a new <code>NSManagedObjectID</code> and cache the values. Again, this is factored
+out into a separate method. Then, we call the <code>objectWithID</code> method of
+<code>NSManagedObjectContext</code> to create an empty <code>NSManagedObject</code> for the item.</p>
+
+<pre><code>- (id)fetchObjects:(NSFetchRequest*)request 
+       withContext:(NSManagedObjectContext*)context {
+    NSArray* items = [BandCampAPI apiRequestEntitiesWithName:request.entityName 
+                                                   predicate:request.predicate];
+    return [items map:^(id item) {
+        NSManagedObjectID* oid = [self objectIdForNewObjectOfEntity:request.entity 
+                                                        cacheValues:item];
+        return [context objectWithID:oid];
+    }];
+}
+</code></pre>
+
+<p>In the Bandcamp API, each entity can uniquely be identified by its key. For
+example, a <code>Band</code> entity has the key <code>band_id</code> that uniquely identifies a band.
+Using the CoreData method <code>newObjectIDForEntity:referenceObject</code> we can create
+an <code>NSManagedObjectID</code> based on this id. Finally, we cache the values for an
+entity in the <code>cache</code> instance variable (which is an <code>NSDictionary</code> with
+<code>NSManagedObjectID</code> as keys and <code>NSDictionary</code> objects as values).</p>
+
+<pre><code>- (NSManagedObjectID*)objectIdForNewObjectOfEntity:(NSEntityDescription*)entityDescription
+                                       cacheValues:(NSDictionary*)values {
+    NSString* nativeKey = [self nativeKeyForEntityName:entityDescription.name];
+    id referenceId = [values objectForKey:nativeKey];
+    NSManagedObjectID *objectId = [self newObjectIDForEntity:entityDescription 
+                                             referenceObject:referenceId];
+    [cache setObject:values forKey:objectId];
+    return objectId;
+}
+</code></pre>
+
+<p>Note that when we created the <code>NSManagedObject</code>, the properties were not set. The managed objects only
+contain their unique ID.
+Core Data uses <a href="https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/CoreData/Articles/cdFaultingUniquing.html">faulting</a> when you access the properties, and we have to implement another
+method to support it: <code>newValuesForObjectWithID:withContext:error:</code>. This
+method will get called when we access the property of a managed object. Each
+<code>NSManagedObject</code> is backed by an <code>NSIncrementalStoreNode</code> that holds the
+values. In a database backend, the <code>NSIncrementalStoreNode</code> would correspond to
+a database record. In our API, it will be filled with an <code>NSDictionary</code> returned
+from the API. Note that in the previous method, we already cached this
+<code>NSDictionary</code>, so we don&#8217;t need to do an API request:</p>
+
+<pre><code>- (NSIncrementalStoreNode*)newValuesForObjectWithID:(NSManagedObjectID*)objectID 
+                                        withContext:(NSManagedObjectContext*)context
+                                              error:(NSError**)error {
+    NSDictionary* cachedValues = [cache objectForKey:objectID];
+    NSIncrementalStoreNode* node = 
+        [[NSIncrementalStoreNode alloc] initWithObjectID:objectID
+                                              withValues:cachedValues 
+                                                 version:1];
+    return node;
+}
+</code></pre>
+
+<p>There is one more important method to implement:
+<code>newValueForRelationship:forObjectWithID:withContext:error:</code>. As you can guess
+from its name, this is where we lookup the relationships. We look at the
+relationship source and target entity and name, and call the appropriate API
+methods to fetch the relationship objects. Again, we cache the API results and
+return an <code>NSArray</code> with <code>NSManagedObjectID</code> for each result.</p>
+
+<p>We will implement two relationships in this method: <code>discography</code>, which relates
+a <code>Band</code> to its <code>Album</code>s, and <code>tracks</code> which relates an <code>Album</code> with its
+<code>Track</code>s. In this method, we dispatch on the relationship name. In a more
+complicated situation where multiple relationships with the same name exist you
+can also inspect the relationship&#8217;s entities.</p>
+
+<pre><code>- (id)newValueForRelationship:(NSRelationshipDescription*)relationship 
+              forObjectWithID:(NSManagedObjectID*)objectID
+                  withContext:(NSManagedObjectContext*)context
+                        error:(NSError**)error {
+    if([relationship.name isEqualToString:@"discography"]) {
+        return [self fetchDiscographyForBandWithId:objectID 
+                                       albumEntity:relationship.destinationEntity];
+    } else if([relationship.name isEqualToString:@"tracks"]) {
+        return [self fetchTracksForAlbumWithId:objectID 
+                                   trackEntity:relationship.destinationEntity];
+    }
+    NSLog(@"unknown relatioship: %@", relationship);
+    return nil;
+}
+</code></pre>
+
+<p>Note that the return value of the method should be an <code>NSArray</code> with
+<code>NSManagedObjectID</code>s, not <code>NSManagedObject</code>s! To give an example, for the
+discography we do an API call to fetch the raw data, and then create
+<code>NSManagedObjectID</code>s for each album returned by the API:</p>
+
+<pre><code>- (NSArray*)fetchDiscographyForBandWithId:(NSManagedObjectID*)objectID
+                              albumEntity:(NSEntityDescription*)entity {
+    id bandId = [self referenceObjectForObjectID:objectID];            
+    NSArray* discographyData = [BandCampAPI apiDiscographyForBandWithId:bandId];
+    return [discographyData map:^(id album) {
+        return [self objectIdForNewObjectOfEntity:entity cacheValues:album];
+
+    }];
+}
+</code></pre>
+
+<p><strong>Usage</strong></p>
+
+<p>Now we can leverage the power of CoreData to access our API. Consumers of our
+model don&#8217;t know whether they are accessing an API, an SQLite database or an XML file.
+It&#8217;s all abstracted away into our <code>NSIncrementalStore</code> subclass.</p>
+
+<p>To give an example, here&#8217;s how you can find a band using Core Data:</p>
+
+<pre><code>NSEntityDescription *entityDescription = [NSEntityDescription
+                                          entityForName:@"Band" inManagedObjectContext:moc];
+
+NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name == %@", @"Rue Royale"];
+NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+fetchRequest.entity = entityDescription;
+fetchRequest.predicate = predicate;
+
+NSArray *results = [moc executeFetchRequest:fetchRequest error:nil];
+Band* band = [results lastObject];
+</code></pre>
+
+<p>This code will make the appropriate API request and return an object of type
+<code>Band</code>. The <code>Band</code> class is generated from our CoreData model, and all of the
+properties are accessible as Objective-C properties.</p>
+
+<p>When you then want to find the bands albums, it&#8217;s as simple as doing:</p>
+
+<pre><code>for(Album* album in band.discography) {
+  NSLog(@"album title: %@", album.title);
+}
+</code></pre>
+
+<p>The nice thing about this code that there are no implementation details which
+bleed through. We could change the backend to an SQLite store and the code won&#8217;t
+break. Additionally, the code is more type-safe: if we mistype a property name
+(for example, <code>discograhpy</code> instead of <code>discography</code>) we get a compiler error.</p>
+
+<p><strong>Next steps / Problems</strong></p>
+
+<p>Because this is all very new and not too well documented, I might have made a
+couple of mistakes. I would be really interested in hearing about it if you do
+spot something, and will update this post accordingly.</p>
+
+<p>All the API calls and Core Data calls are done in a synchronous way. This is not
+a good idea in production code, as it will block the main thread. I&#8217;m
+experimenting myself with how to deal with that, and don&#8217;t have a single answer
+yet. The <a href="http://sealedabstract.com/code/nsincrementalstore-the-future-of-web-services-in-ios-mac-os-x/#comments">comments</a> on Drew&#8217;s article are really helpful.</p>
+
+<p>Finally, we implemented a readonly API. By implementing some more things in our
+<code>NSIncrementalStore</code> subclass we can add support for changing, saving, deleting
+and creating objects.</p>
+
+<p>I can imagine it would be really interesting to write a subclass of
+<code>NSIncrementalStore</code> that can deal with <a href="http://couchdb.apache.org/">CouchDB</a> or <a href="https://parse.com/">Parse</a>. Implementing a
+backend would then be as simple as defining your CoreData data model and initializing
+the class and you&#8217;re up and running.</p>
+
+<p>This is the first long technical blogpost I&#8217;ve written, and I would love to hear
+your thoughts on it. Especially parts that are not clear or written in a bad
+way. Please <a href="mailto:chris@eidhof.nl">email me</a> with your thoughts.</p>
+
+<p><strong>Running the example code</strong></p>
+
+<p>To run the example code, clone <a href="https://github.com/chriseidhof/NSIncrementalStore-Test-Project/tree/blogpost">the project</a> from github and open it in XCode. I
+just used a standard iOS template, and pressing &#8216;Run&#8217; will not do much. The
+documentation is in the tests: open <code>IncrementalStoreTestTests.m</code> to see how to
+use the code. You can run the tests by pressing <em>Cmd+U</em> or <em>Product &gt; Test</em>.</p>
+
+<p><strong>References</strong></p>
+
+<p><a href="https://github.com/chriseidhof/NSIncrementalStore-Test-Project/tree/blogpost">Project on Github</a><br/><a href="http://sealedabstract.com/code/nsincrementalstore-the-future-of-web-services-in-ios-mac-os-x/">SealedAbstract</a><br/><a href="https://developer.apple.com/library/mac/#documentation/DataManagement/Conceptual/IncrementalStorePG/Introduction/Introduction.html#//apple_ref/doc/uid/TP40010706">NSIncrementalStore Programming Guide</a><br/><a href="https://developer.apple.com/library/mac/#documentation/CoreData/Reference/NSIncrementalStore_Class/Reference/NSIncrementalStore.html#//apple_ref/occ/cl/NSIncrementalStore">NSIncrementalStore Class Reference</a><br/><a href="http://developer.apple.com/videos/wwdc/2011/">Core Data talks</a><br/><a href="https://developer.apple.com/library/mac/#documentation/cocoa/conceptual/coredata/cdprogrammingguide.html">Core Data Programming Guide</a></p>{% endblock body %}

@@ -1,0 +1,48 @@
+date: 19-01-2012
+title: How I write my code
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>Recently I saw a couple of posts on how people write their code. I found it inspiring, and part of the reason I&#8217;m writing this article is that I don&#8217;t
+know how I write my code (not explicitly, at least).</p>
+
+<p>Most of the time, I know what I&#8217;m going to build a few days, weeks or even
+months beforehand. During the time between idea and building, I think about it.
+I don&#8217;t set apart time to do that, it just happens. If the problem is
+interesting, I&#8217;ll think more about it than a problem with a straightforward
+solution.</p>
+
+<p>Once I start coding, most of the times I start with the hardest problem. For
+example, if I would build a Google Maps like application I would start by
+implementing the map view and the tiles. Later on, I will add the more &#8220;boring&#8221;
+parts. The upside of this approach: you will discover the hard problems early on
+in the process. The downside: you sometimes have to push yourself to finish all
+the little details. Sometimes I lose interest in the last part of the process.</p>
+
+<p>During the coding, I&#8217;m logging a lot. I&#8217;m a big logger. I love NSLog,
+console.log, println and their friends. I once heard that there are two cults of
+programmers: those who log, and those who use breakpoints. I hardly ever use
+breakpoints, although sometimes they can be handy.</p>
+
+<p>I always put my projects under version control, but in the beginning of the
+project I don&#8217;t write any useful commit messages. Lots of commits are named
+&#8220;checkpoint&#8221;. When collaborating or working on a larger project I do make sure
+my commits are logical and have a good commit message.</p>
+
+<p>I almost never write tests. I think this is one of my major professional
+weaknesses. This also has to do with the fact that I&#8217;ve programmed
+Haskell a lot, where you don&#8217;t need much testing, as you can use the type system
+to do testing. Maybe it would be a good new year&#8217;s resolution: write more tests.</p>
+
+<p>I sparsely document my code. I try make sure it is very readable. For example,
+when writing a complex if condition, you can add some documentation to explain
+what it does. Instead, I will pull it out into a variable and name it
+appropriately. I also use method names that describe what they are doing.</p>
+
+<p>When I&#8217;m quickly building something, I sometimes copy/paste code, but always put
+a comment: &#8220;copy pasted from [filename]&#8221;. This way I can continue my train of
+thought. However, it hurts me to see this, so when I&#8217;m refactoring I try to
+simplify it. I can&#8217;t stand repetitive code, and will work hard to eliminate it
+and solve things in a beautiful way.</p>{% endblock body %}

@@ -1,0 +1,30 @@
+date: 07-10-2011
+title: Week 2: design improvements
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>This post is about Week 2 of my <a href="http://chriseidhof.tumblr.com/post/10680838726/one-app-in-four-weeks-kickoff">One App in Four Weeks</a> project.</p>
+
+<p>This week was a bit strange, in many ways. For me, it didn&#8217;t feel like a productive week. On Monday
+and Tuesday I got some things done, Wednesday I was travelling (but thinking)
+and Thursday I spent most of the day creating a custom design in Photoshop. I
+then decided that it wasn&#8217;t good enough. Instead, I chose to go for the default styles used in
+all of Apple&#8217;s apps and Twitter. If it is good enough for <a href="http://www.atebits.com/">Loren
+Brichter</a>, it is good enough for me.</p>
+
+<p>I didn&#8217;t implement search functionality yet. Because I had to do lots of messy
+stuff (such as creating a custom version of sqlite), I stepped back and thought
+about whether I would need it. For now, I&#8217;ll stay lean and not add it, and see
+if it will become necessary.</p>
+
+<p>I also removed the location feature (because it wasn&#8217;t implemented yet). I don&#8217;t
+think it is necessary, although it would make a nice add-on. I look forward to
+the beta-testers&#8217; feedback to see what they think of it.</p>
+
+<p>Today I spent polishing the features I had, trying to minimize the UI and keep
+everything very simple. The app is now quite minimal, but it does the
+job. Now it&#8217;s time to send out some beta&#8217;s!</p>
+
+<p><img src="http://dl.dropbox.com/u/1264810/blog-content/screenshot-1.png" alt="Recent Checkins"/><img src="http://dl.dropbox.com/u/1264810/blog-content/screenshot-2.png" alt="Creating a Checkin"/><img src="http://dl.dropbox.com/u/1264810/blog-content/screenshot-3.png" alt="Contact List"/><img src="http://dl.dropbox.com/u/1264810/blog-content/screenshot-4.png" alt="View Checkins for a Contact"/></p>{% endblock body %}

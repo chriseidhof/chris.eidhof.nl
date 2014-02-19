@@ -1,0 +1,47 @@
+date: 30-09-2011
+title: One App in Four Weeks: Week 1
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>This Monday, I started <a href="http://chriseidhof.tumblr.com/post/10680838726/one-app-in-four-weeks-kickoff">One App in Four
+Weeks</a>.
+I started by posting a list of ideas. The third idea was the most appealling to
+people (although I still want to build the other two as well, but not now), and
+I got some great feedback from everybody.</p>
+
+<p>I selected the idea and <a href="http://chriseidhof.tumblr.com/post/10723613553/check-in-to-people">defined the Minimum Viable
+Product</a>,
+which is quite simple: you can check in to people, add a time and note to that
+checkin and possibly a location as well.</p>
+
+<p>Yesterday I wrote about the first <a href="http://chriseidhof.tumblr.com/post/10801169656/sketches-and-ideas">sketches and
+ideas</a>, and
+after that I started working on the very first version.</p>
+
+<p>Normally I don&#8217;t show these first versions to people, but because I want to show
+you all the steps I&#8217;ll include the screenshots today. The app is barely
+functional: you see a list of Checkins, and when you press the &#8216;+&#8217; button it
+shows the list of your contacts in Address Book. Tapping on a contact takes you
+to the &#8216;Add Checkin&#8217; screen, where you can add a note. The time is not
+changeable yet, and the location isn&#8217;t implemented at all. When you then press
+&#8216;Done&#8217; you&#8217;ll go back to the start screen, and the checkin was added. You can
+also edit it again by tapping on it.</p>
+
+<p>For the location, I&#8217;m thinking of using the Foursquare API, which can provide
+you with venue information based on lat/lon. I&#8217;ll probably store the locations
+and try to find a previously used location when possible (about half the time I
+meet people it&#8217;s in the same places).</p>
+
+<p>I also had some ideas about searching: I want to index all the words in the
+checkin database, and do autocompletion using those words. This means that
+searching can be a very fast experience. Search could probably be quite
+important: I can also imagine it&#8217;s handy if I want to find a PHP developer in my
+network (I always forget who knows which languages).</p>
+
+<p><a href="http://news.ycombinator.com/item?id=3056207">Discuss on Hacker News</a></p>
+
+<p><img src="http://dl.dropbox.com/u/1264810/blog-content/IMG_1194.PNG" alt="List of Checkins"/></p>
+
+<p><img src="http://dl.dropbox.com/u/1264810/blog-content/IMG_1197.PNG" alt="Checkin Screen"/></p>{% endblock body %}

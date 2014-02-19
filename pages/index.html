@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section id="wrapper">
+  <header id="header">
+  <a id="title" class="index">Chris Eidhof</a>
+  <img src="{% static 'images/logo.png' %}" style="width: 2em">
+  </header> <!--header-->
+  
+  <ul id="post-list">
+  	{% for post in posts|slice:":5" %}
+  	<li> 
+  		<a href='/{{ post.path }}'><aside class="dates">{{ post.date|date:"M j" }}</aside></a>
+      <a href='/{{ post.path }}'>{{ post.title }} {% if post.headline|length %}<h2>{{ post.headline }}</h2>{% endif %}</a>
+  	</li>
+  	{% endfor %}
+  </ul> <!--post-list-->
+  
+  {% if posts|length >= 4 %}
+  <footer id="post-list-footer">
+    <a id="archive-link" href="archive.html"> <span class="arrow">&larr;</span> Older posts</a>
+  </footer>
+  {% endif %}
+  
+  {% block footer %}
+  <footer id="footer">
+  <p class="small">Made in Berlin, by <a href="http://www.twitter.com/chriseidhof/">@chriseidhof</a>.</p>
+  </footer>
+  {% endblock footer %}
+</section> <!--wrapper-->
+{% endblock content %}

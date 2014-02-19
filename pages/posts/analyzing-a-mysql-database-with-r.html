@@ -1,0 +1,44 @@
+date: 22-07-2011
+title: Analyzing a MySQL database with R
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>In this article, we analyze a MySQL database which contains soccer transfer data, using the R environment, on OS X. We show in a few simple steps how you can link the two together.</p>
+<p><strong><span> </span></strong> <strong>Prerequisites</strong></p>
+<p>Make sure you have a recent version of MySQL, and the latest version of R installed. As our graphical user interface, we use <a href="http://rstudio.org/">RStudio</a>. From RStudio you can install the MySQL package: <code>install.packages("RMySQL")</code>. If this doesn&#8217;t work for you, please refer to the <a href="http://biostat.mc.vanderbilt.edu/wiki/Main/RMySQL">installation instructions</a>. For plotting, install the ggplot2 library by issueing a <code>install.packages("ggplot2")</code> in RStudio. Alternatively, you can use the graphical interface: in the bottom right panel, choose &#8216;Packages&#8217; and click &#8216;Install Packages&#8217;. This presents you with a dialog to choose a <a href="http://cran.r-project.org/">CRAN</a> mirror, and a prompt where you can enter the package name.</p>
+<p><strong>Analysis</strong></p>
+<p>Our MySQL database contains a table <code>transactions</code>, which contains transaction data. The <code>transactions</code> table has a column <code>transfer_value</code> of type <code>float</code>, which is what we are interested in. First, we generate a big list of all the transactions: <code>SELECT transfer_value FROM transactions</code>, which generates a MySQL table with a single column that contains the transaction data.</p>
+<p>First, let&#8217;s make sure the MySQL library is imported:</p>
+<pre><code>&gt; library(RMySQL)
+</code></pre>
+<p>Next, we connect to our database, which is named <code>soccer</code>:</p>
+<pre><code>&gt; con &lt;- dbConnect(MySQL(), dbname="soccer")
+</code></pre>
+<p>Now we can start to issue queries:</p>
+<pre><code>&gt; transfer_values &lt;- dbGetQuery(con, "select transfer_value from transactions")
+&gt; summary(transfer_values)
+transfer_value    
+Min.   :    5900  
+1st Qu.:  500000  
+Median : 1700000  
+Mean   : 3688301  
+3rd Qu.: 4500000  
+Max.   :94000000
+</code></pre>
+<p>This shows us a summary of the transfer values. The maximum is 94 million, which was Cristiano Ronaldo&#8217;s transfer to Real Madrid. To look at how the numbers are distributed, we can plot them in a graph, using the <code>qplot</code> function from the <code>ggplot2</code> library, which is a convenience function that quickly generates <code>ggplot</code> plot objects.</p>
+<pre><code>&gt; library(ggplot2)
+&gt; qplot(transfer_values$transfer_value)
+</code></pre>
+<p>This gives us a nice picture, which looks like a <a href="http://en.wikipedia.org/wiki/Power_law">Power Law</a>:</p>
+<p><img src="http://media.tumblr.com/tumblr_loqsvzES871ql6bph.png"/></p>
+<p>If we zoom in on the transfers up to 10 million, we get a more detailed picture, showing peaks at regular intervals: apparently, the soccer negotiators like nice round numbers too.</p>
+<pre><code>&gt; qplot(transfer_values$transfer_value, xlim=c(0,1e07), binwidth=1e05, ylim=c(0,500))
+</code></pre>
+<p><img src="http://media.tumblr.com/tumblr_loqswmkrnV1ql6bph.png"/></p>
+<p>For more info on the <code>qplot</code> command, you can type <code>help(qplot)</code>, and RStudio will show you the relevant help page on the bottom right.</p>
+<p><strong>Conclusion</strong></p>
+<p>Even though we did very basic analysis of the data, we have seen how to connect R to MySQL and how to use the <code>ggplot2</code> library to visualize the data.</p>
+<p>Thanks to <a href="http://ptegelaar.nl/">Peter Tegelaar</a> for reading a draft of this post and helping with the code.</p>
+<p><em>Update: </em>see <a href="http://news.ycombinator.com/item?id=2828176">Hacker News</a> for the discussion.</p>{% endblock body %}

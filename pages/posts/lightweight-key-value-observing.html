@@ -1,0 +1,114 @@
+date: 09-10-2013
+title: Lightweight Key-Value Observing
+headline: Making KVO simpler and easier
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>In this article, I&#8217;d like to implement a simple class I use for
+key-value observing. I think KVO is great, however, for most of what I
+do, there are two problems:</p>
+
+<ol><li>I don&#8217;t like the dispatching in <code>observeValueForKeyPath:ofObject:change:context:</code>. I think it gets messy and confusing if you observe more than one object.</li>
+<li>You have to balance each <em>add observer</em> with a <em>remove observer</em>,
+it would be nice if this can be done automatically.</li>
+</ol><p>So, off we go. The trick we will use is one I first saw in
+<a href="https://github.com/th-in-gs/THObserversAndBinders">THObserversAndBinders</a>,
+and this post is basically a description of what they did, but in the
+most minimalistic way.</p>
+
+<p>First, we&#8217;ll define the interface for our object:</p>
+
+<pre><code>@interface Observer : NSObject
++ (instancetype)observerWithObject:(id)object
+                           keyPath:(NSString*)keyPath
+                            target:(id)target
+                          selector:(SEL)selector;
+@end
+</code></pre>
+
+<p>The observer takes four parameters, which are hopefully self-explanatory. I chose
+to use the target/action pattern: an alternative would have been blocks,
+but then you would have to do the weakSelf/strongSelf dance, and it&#8217;s
+often nice to have a separate method anyway.</p>
+
+<p>What we will do is set up the KVO inside the initializer, and remove it
+in the <code>dealloc</code> method. What this means is that as long as the
+<code>Observer</code> object is retained, we will have an observer. The way I
+typically use this, for example, in a view controller:</p>
+
+<pre><code>self.usernameObserver = [Observer observerWithObject:self.user
+                                             keyPath:@"name"
+                                              target:self
+                                            selector:@selector(usernameChanged)];
+</code></pre>
+
+<p>By putting it in a property, we are making sure it gets retained. As
+soon as our view controller deallocates, it&#8217;ll set the property to nil
+and the observer will stop observing.</p>
+
+<p>In the implementation, it&#8217;s important that we keep a weak reference to
+both the observed object and the target. If one of the two gets nil, we
+want to stop sending messages:</p>
+
+<pre><code>@interface Observer ()
+@property (nonatomic, weak) id target;
+@property (nonatomic) SEL selector;
+@property (nonatomic, weak) id observedObject;
+@property (nonatomic, copy) NSString* keyPath;
+@end
+</code></pre>
+
+<p>The initializer sets up the KVO notifications. It uses <code>self</code> as the
+context. This is necessary if we would ever have a subclass that adds a
+similar observer:</p>
+
+<pre><code>- (id)initWithObject:(id)object keyPath:(NSString*)keyPath target:(id)target selector:(SEL)selector
+{
+  if (self) {
+    self.target = target;
+    self.selector = selector;
+    self.observedObject = object;
+    self.keyPath = keyPath;
+    [object addObserver:self forKeyPath:keyPath options:0 context:self];
+  }
+  return self;
+}
+</code></pre>
+
+<p>When a change happens, we just notify our target, if it still exists:</p>
+
+<pre><code>- (void)observeValueForKeyPath:(NSString*)keyPath ofObject:(id)object change:(NSDictionary*)change context:(void*)context
+{
+  if (context == self) {
+    id strongTarget = self.target;
+    if ([strongTarget respondsToSelector:self.selector]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+      [strongTarget performSelector:self.selector];
+#pragma clang diagnostic pop
+    }
+  }
+}
+</code></pre>
+
+<p>And finally, in the <code>dealloc</code> we remove the observer:</p>
+
+<pre><code>- (void)dealloc
+{
+    id strongObservedObject = self.observedObject;
+    if (strongObservedObject) {
+        [strongObservedObject removeObserver:self forKeyPath:self.keyPath];
+    }
+}
+</code></pre>
+
+<p>That&#8217;s all there is to it. There are a lot of ways this could be
+extended: add blocks support, or my favorite trick: another convenience
+constructor that call the action directly the first time. However, I
+wanted to show the core of the technique, adjust it to your needs.</p>
+
+<p>By using this technique you don&#8217;t have to remember too much when doing KVO.
+Just retain the observers, and set them to nil when you&#8217;re done. The
+rest will happen automatically.</p>{% endblock body %}

@@ -1,0 +1,39 @@
+date: 11-10-2011
+title: Introducing Met
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>After yesterday&#8217;s post, a lot of people contacted me with ideas for a name.
+Thanks Pim, Martijn, Miles, Wilfred and Fabian (I hope I didn&#8217;t forget
+somebody). Some liked James, some liked Meetups, all with good reasons.</p>
+
+<p>However, one reply stood out: <a href="http://iksi.tv">Jurriaan</a> had an idea for a
+more minimalistic name: &#8220;Met&#8221;. Short and to the point. It&#8217;s about who you met.
+The best thing is: in Dutch it means &#8220;with&#8221;, and this is about who you were
+with. Awesome!</p>
+
+<p>Today I started designing a splash screen and an icon (see below). I also added
+an optional passcode lock (as this can be very private data). Getting the design
+and logic right took a bit of thinking and experimenting, but I think it&#8217;s good
+now. It&#8217;s enabled whenever you start the app, or resume the app (for example,
+after you lock the screen, switch to a different app or get a phone call).</p>
+
+<p>Martijn and Eelco send in a bunch of very good feature requests / tips today, thanks guys!
+To give a glimpse of my next actions:</p>
+
+<ul><li>Pressed state for passcode buttons</li>
+<li>Use secure passcode storage (currently, I hacked it together using
+NSUserDefaults, which is unsafe)</li>
+<li>Swipe to delete</li>
+<li>Text color for selected tableview cells</li>
+<li>Link to Address Book from a contact / meetup</li>
+<li>Screen rotation support (as this gives you a bigger keyboard)</li>
+</ul><p>I will also add search, eventually. It&#8217;s a bit complicated, because I&#8217;ll have to
+compile my own sqlite library, and I&#8217;m a bit afraid that it might break in the
+future. However, analysis paralysis is a horrible thing, and making decisions is
+a good thing, so I decided to first do all the other stuff and then think about
+it again.</p>
+
+<p><img src="http://dl.dropbox.com/u/1264810/blog-content/splashscreen.png" alt="Splash Screen"/><img src="http://dl.dropbox.com/u/1264810/blog-content/icon-v1.png" alt="Icon"/></p>{% endblock body %}

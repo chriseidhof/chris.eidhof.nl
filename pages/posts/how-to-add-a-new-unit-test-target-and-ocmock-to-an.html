@@ -1,0 +1,33 @@
+date: 03-12-2012
+title: How to add a new Unit Test target and OCMock to an existing XCode project 
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>I had some trouble today trying to add Unit Tests to an existing project that uses <a href="http://cocoapods.org">CocoaPods</a>. So I decided to do a quick writeup of how I got it working:</p>
+
+<ol><li><p>Create a new project called &#8216;BetterTodoList&#8217;</p></li>
+<li><p>Create a new Podfile with the following contents</p></li>
+</ol><pre><code>platform :ios, 6.0
+pod 'AFNetworking'</code></pre>
+
+<ol><li><p>Close BetterTodoList in XCode, and open the workspace (as instructed by CocoaPods)</p></li>
+<li><p>Run, and see that everything still works</p></li>
+<li><p>Write some legacy code</p></li>
+<li><p>Realize you need Unit Tests:</p>
+
+<ul><li>File -&gt; New -&gt; Target</li>
+<li>Choose Other -&gt; Cocoa Touch Unit Test Bundle</li>
+<li>Name it &#8220;BetterTodoListTests&#8221;</li>
+</ul></li>
+<li><p>Press Cmd+U. If nothing happens, check if Product &gt; Test is grayed out in the menu. In that case, press Cmd+&lt;, select Test and add the test using the + button.</p></li>
+<li><p>Add the following lines to your Podfile, and re-run &#8220;pod install&#8221;</p>
+
+<pre><code>target 'BetterTodoListTests', :exclusive =&gt; true do
+pod 'OCMock' 
+end</code></pre></li>
+<li><p>Import <code>OCMock.h</code> in one of your files and see that it&#8217;s working.</p></li>
+<li><p>?</p></li>
+<li><p>Profit</p></li>
+</ol><p>Addendum: If you still have problems because the test target cannot access the compiled objects (e.g. &#8220;Symbol Not Found&#8221; errors), select the project in the organizer, then select the Test target, go to &#8220;Bundle Loader&#8221; and add the following values for both Debug and Release: <code>$(BUILT_PRODUCTS_DIR)/BetterTodoList.app/BetterTodoList</code></p>{% endblock body %}

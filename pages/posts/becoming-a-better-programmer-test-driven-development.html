@@ -1,0 +1,54 @@
+date: 08-02-2012
+title: Becoming a better programmer: Test-Driven Development
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>As I&#8217;m enjoying programming again (and more so every week), I started to think
+consciously again about improving myself as a programmer. After a recommendation
+of <a href="http://twitter.com/breun">breun</a> I started reading <a href="http://www.pearsonhighered.com/educator/academic/product/1,3110,0132350882,00.html">Clean Code</a>, which I can definitely recommend.</p>
+
+<p>One of the things I have always felt bad about professionally is not doing
+Test-Driven Development. Back when I was programming Haskell a lot I did do a
+lot of type-driven development, which overlaps a bit: you write down your types
+and then try to implement it.  However, in Objective-C the type system isn&#8217;t of
+much use (compared to Haskell), so I really had to do it: write tests.</p>
+
+<p>Another really big motivation is that I took over a project from another
+developer. The project was huge, and there were no tests at all. I ended up
+breaking things multiple times without realizing it (and I only found out after
+deploying it to the testers). I pledged to myself to do better than that.</p>
+
+<p>Before I set off to write some tests, I had to find a testing framework. There
+is a great community wiki on StackOverflow called <a href="http://stackoverflow.com/questions/4114083/ios-tests-specs-tdd-bdd-and-integration-acceptance-testing">iOS Tests/Specs TDD/BDD and
+Integration &amp; Acceptance
+Testing</a>,
+but it&#8217;s also a bit overwhelming.</p>
+
+<p>I started out by using the built-in Unit
+Testing framework that&#8217;s provided by Apple (see: <a href="https://developer.apple.com/library/mac/#documentation/DeveloperTools/Conceptual/UnitTesting/">XCode Unit Testing
+Guide</a>).
+However, writing unit tests is quite hard for GUI code. As I wanted to test a
+new UIView subclass that I was developing, I had to test things such as tapping
+and inspecting other views.</p>
+
+<p>Then I stumbled upon <a href="https://github.com/square/KIF">KIF</a> (again, after a recommendation from breun), an open source
+integration testing framework by Square. As advertised, it was easy to configure
+and set up, and I was writing tests very soon after that. For example, here&#8217;s a
+scenario that tests whether my view closes, and even when you haven&#8217;t used KIF
+before you can understand exactly what it does:</p>
+
+<pre><code>KIFTestScenario *scenario = [KIFTestScenario scenarioWithDescription:@"Test that the picker closes when tapped outside"];
+
+[scenario addStep:[KIFTestStep stepToReset]];
+[scenario addStep:[KIFTestStep stepToAppear]];
+[scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:pickerAccessibilityLabel]];
+[scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Tap to close"]];
+[scenario addStep:[KIFTestStep stepToWaitForAbsenceOfViewWithAccessibilityLabel:pickerAccessibilityLabel]];
+</code></pre>
+
+<p>So far, I&#8217;m quite happy with the combination of KIF and the built-in unit
+testing. I&#8217;ll try to apply it to more of my projects, and probably be a better
+programmer because of that. At least when other people will read my code they
+can use the tests as documentation to see what the code should do.</p>{% endblock body %}

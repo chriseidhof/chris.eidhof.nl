@@ -1,0 +1,34 @@
+date: 31-10-2011
+title: HTML5 is no silver bullet for apps
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>I sometimes hear people tell me that they are going to let their next app be
+an HTML 5 app. This way, they can write for both iPhone and Android at the
+same time. This seems like a big win.</p>
+
+<p>Although iOS and Android are very similar, both being touch-based and mobile,
+they are also quite different. For example:</p>
+
+<p>On Android, if you want to go back to the screen you just came from, you press
+the physical &#8216;Back&#8217; button on the device. On the iPhone, there is a standard pattern
+with a navigation bar on the top of your screen, where the left button is shaped
+like an arrow to the left, and takes you back.</p>
+
+<p>On the iPhone, a tab bar on the bottom of the screen shows you the different groups
+of functionality in an app (e.g., in the Music app you can browse by Playlist,
+Artists, Songs and more). On Android, the Menu button is often used, which pops
+up a menu with the available options.</p>
+
+<p>If you are going to write an app that looks exactly the same on both platforms,
+you&#8217;ll have an app that does neither feel like an Android app nor like an iPhone
+app. Users will have a hard time understanding it, as they have to learn how to
+operate your design. Don&#8217;t do it.
+You can still use HTML5 for parts of your app, so you can share things between
+iOS and Android, but especially for navigation, please use the native controls.</p>
+
+<p>Of course, there is one big exception: games. It makes total sense to do it in
+HTML5 (if you don&#8217;t require heavy performance), so you can be on as many
+platforms as possible. Often games don&#8217;t need or use any of the platform&#8217;s standard controls.</p>{% endblock body %}

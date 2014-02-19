@@ -1,0 +1,26 @@
+date: 17-02-2014
+title: Behind the scenes
+headline: How I write my articles for objc.io
+
+{% extends "post.html" %}
+{% block body %}
+{% filter markdown %} 
+My workflow for writing an [objc.io](http://www.objc.io) article is like this:
+
+Once we release an issue, we often have the topic for the next issue ready. Florian, Daniel and me get together and we discuss and try to distribute the relevant topics among the three of us (in addition to the guest articles that are already planned). For example, for the [strings issue](http://www.objc.io/issue-9/), I knew my topic would be [string parsing](http://www.objc.io/issue-9/string-parsing.html), and that I would talk about scanners, regular expressions and parsers.
+
+Then there are two possibilities: I know directly what I want to write, or I have no idea yet.
+
+When I know what to write, I immediately start thinking about an outline. This takes a few weeks, and I think on the train, bike and discuss bits and pieces with Daniel and Florian whenever the topic comes up. I collect notes and ideas in a file or in Evernote. If I decide that I want a sample project (which I really like having most of the time) then I will start with building that and finishing it. This usually takes a day or two. 
+Mostly, there is no writing during the building of the project (only note-taking). 
+
+However, I do prepare an outline. We share the outlines with each other, also to distribute all the topics and decide who writes about what. And we add things to each other's articles, to make sure we cover everything. Sometimes, we even write parts of each other's article.  After this process, I'll have a sample project and an outline. Once I'm happy with the sample project and the outline, I start writing. This also takes a day or two.
+
+When I don't know what to write, I start with doing a lot of research. I read blogs, try to find the WWDC videos, read the programming guides and other documentation, and see what kinds of problems people have. I ask myself questions and try to answer them. Then I follow the process above.
+
+Finally, after the project and article are ready, the three of us read each other's articles and try to improve it. We also do this with the guest posts. And once we're all happy (or ran out of time) we send everything to Natalye, our copy-editor, who makes sure things are phrased clearly, that there are no language mistakes and that there's a consistent style.
+
+It's amazing how much effort goes into this: at least a few days per article. However, even if nobody reads you article, it's still worth the effort: doing the background research, getting your facts right and trying to put all this stuff into words really teaches me a lot. And the effort becomes even more worthwile when you see that your article is read by tens of thousands of people.
+
+{% endfilter %}
+{% endblock body %}

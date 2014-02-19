@@ -1,0 +1,37 @@
+date: 24-02-2013
+title: How to keep your classes small and clean
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>I&#8217;m a little obsessed with trying to write maintainable, clean code. I&#8217;m not
+yet really good at it, but try to become better every day. It started to become
+more of an obsession than usual when I realized that a lot of the projects I
+work on will someday be taken over by other people, and I don&#8217;t want to be embarassed.</p>
+
+<p>This explains my recent interest in testing (<a href="http://iosunittesting.com/">some</a>
+<a href="http://blog.securemacprogramming.com/">interesting</a>
+<a href="http://qualitycoding.org/">blogs</a> on that).</p>
+
+<p>Although I&#8217;m not yet very good at testing everything, I have two other heuristics
+that I use to keep my code maintainable: I try to keep my <code>.m</code> files under a hundred lines (this is hard), and 
+try to keep the number of imports small.</p>
+
+<p>Here are two scripts that I use to achieve this. The first one shows the <code>.m</code> files
+in your project with their line counts, and sorts them by line count. The bottom of the list
+(largest files) are top candidates for refactoring:</p>
+
+<pre><code>find . -path './Pods' -prune -o -name "*.m" -exec wc -l "{}" \; | sort -n
+</code></pre>
+
+<p>The other script I wrote generates a <code>.dot</code> file from your imports, and you can
+open it with an app like <a href="http://www.graphviz.org">GraphViz</a> to get a quick overview of how your imports are.
+(I tried to keep it under 140 characters so it&#8217;s tweetable).</p>
+
+<pre><code>echo "digraph G {";grep "import \"" **/*.m|sed "s/.m:#import \"/ /;s/.*\///;s/+/_/g;s/.h\"//"|awk "{print \$2,\"-&gt; \"\$1\";\"}";echo "}"
+</code></pre>
+
+<p>Put the above line in a file or in a shell alias, run it and pipe the output to
+a file that you can open with GraphViz. I&#8217;m pretty sure this can be done even more effectively using just <code>awk</code>, but
+I&#8217;m not an expert yet. Bonus points for the shortest solution!</p>{% endblock body %}

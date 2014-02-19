@@ -1,0 +1,32 @@
+date: 13-09-2011
+title: Lost In Translation
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>One of the hardest part in software development is communication. I don&#8217;t mean
+network communication, but person-to-person communication. This is one reason
+why it&#8217;s so convenient to work alone on your pet projects: you don&#8217;t have to
+communicate at all.</p>
+
+<p>Every time you communicate, there is noise in the signal. Because both parties
+have different backgrounds, you lose part of the message whenever you talk to
+somebody else. In general, the more similar the backgounds (e.g. two programmers talking to
+each other), the smaller the error rate.</p>
+
+<p>It is extremely important to realize this, especially when talking to people
+outside of your occupation. On of the best examples I&#8217;ve seen was by <a href="http://sam.aaron.name/">Sam
+Aaron</a>. A few years ago, he showed me a DSL he
+implemented in Ruby to encode his clients&#8217; logic. In true DSL fashion, his
+language exactly described their problem domain, and his program exactly
+specified the way he solved their problems.</p>
+
+<p>Together with the client, Sam sat down and looked at the code. The client wasn&#8217;t
+able to program at all, but was able to read what Sam wrote. Together, they did
+some pair-programming to fix the logical errors that got lost during
+communication.
+This is a prime example of domain specific languages, and one of the
+best examples of clear communication in software I&#8217;ve seen so far.</p>
+
+<p><a href="http://news.ycombinator.com/item?id=2991052">Discuss on Hacker News</a></p>{% endblock body %}

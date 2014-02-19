@@ -1,0 +1,86 @@
+date: 23-09-2012
+title: More Interface Builder
+
+
+{% extends "post.html" %}
+{% block body %}
+
+<p>When I started iPhone programming, I built most of my interfaces in
+code. It was much easier: full control over your interface. Sometimes I
+would start in Interface Builder, but once I stumbled upon limitations I
+would rewrite the whole thing in code.</p>
+
+<p>After learning some more things about Interface Builder, I started using
+it more and more. These days, I try to do almost every UI in Interface
+Builder. Apple has made it a lot easier for us, too: designing your
+table view cells in Interface Builder was quite easy already, but is even
+easier with Storyboards.</p>
+
+<p>Here&#8217;s one example where I used to revert to code, but now use nibs. One
+of the projects I worked on required a horizontally paging scrollview.
+Each page was for answering a question, and contained a description and
+a slider. If you want to play with the example, please download <a href="https://github.com/chriseidhof/interface-builder-test">the
+project</a> from
+github. Let&#8217;s see how to do this using mostly IB:</p>
+
+<p>Start by creating a view controller and adding a scroll view to it.
+Create an outlet scrollView on the view controller.
+Then, create a new empty XIB. We add a single UIView to the XIB
+with nested subviews (the text label and the slider). Then, in the view
+controller, add a method to setup the pages and call it from
+<code>viewDidLoad</code>. Note that the method is a bit long, normally you would
+probably factor it into components:</p>
+
+<pre><code>- (void)setupPages {
+    pages = [NSMutableArray arrayWithCapacity:NUM_PAGES];
+
+    CGFloat pageWidth = self.scrollView.bounds.size.width;
+    CGRect pageFrame = self.scrollView.bounds;
+
+    self.scrollView.contentSize = CGSizeMake(pageWidth*NUM_PAGES, self.scrollView.bounds.size.height);
+
+    for(int i = 0; i &lt; NUM_PAGES; i++) {
+        NSArray* topLevelObjects = [[NSBundle mainBundle] loadNibNamed:pageNibName owner:nil options:nil];
+        UIView* pageView = [topLevelObjects lastObject];
+        pageFrame.origin.x = pageWidth * i;
+        pageView.frame = pageFrame;
+        [self.scrollView addSubview:pageView];
+        [pages addObject:pageView];
+    }
+}
+</code></pre>
+
+<p>For this code to work, it&#8217;s important that there is only one view at the
+top-level of the xib.  The above code creates the pages and adds them to
+the subviews. However, the separate pages don&#8217;t have a way to access the
+label and slider. A crude way to do this is give both of them a tag, and
+use something like <code>[pageView viewWithTag:LABEL_TAG]</code>. Indeed, for small
+views this can work, but it gets messy and hard to maintain quickly.</p>
+
+<p>A better way is to add a new subclass of UIView, named <code>CEPageView</code> and
+change the root-element of PageView.xib to that <code>UIView</code> subclass in the
+Identity Inspector. If you open the Assistant Editor, you can create
+outlets on that newly created class and connect them to the XIB. Note
+that normally, you would drag from a view to the File&#8217;s Owner, now you
+drag to the root element in the Top Level Objects. Change the body of
+the for-loop to this:</p>
+
+<pre><code>    NSArray* topLevelObjects = [[NSBundle mainBundle] loadNibNamed:pageNibName owner:nil options:nil];
+    CEPageView* pageView = [topLevelObjects lastObject]; // change
+    pageFrame.origin.x = pageWidth * i;
+    pageView.frame = pageFrame;
+    [self.scrollView addSubview:pageView];
+    [pages addObject:pageView];
+    // Add these lines:
+    pageView.title.text = [NSString stringWithFormat:@"Page %d", i+1];
+    pageView.slider.value = i / 3.0;
+</code></pre>
+
+<p>You can also override the layoutSubviews of the UIView if you want some
+programmatic control over the layout.</p>
+
+<p>I hope that this technique will make you more productive. I&#8217;m no expert
+on Interface Builder, so if you have any tips let me know!</p>
+
+<p><em>Update</em>: Ole Begemann recommends using UINib instead of <code>loadNibNamed:owner</code>, it should be faster when loading a nib multiple times. I haven&#8217;t tested it yet, but will check it out. See also: <a href="http://oncocoa.blogspot.de/2011/02/nsbundle-vs-uinib-performance.html">NSBundle vs. UINib performance
+</a></p>{% endblock body %}
