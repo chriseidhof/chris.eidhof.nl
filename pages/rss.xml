@@ -1,0 +1,15 @@
+<?xml version= "1.0"?>
+
+<rss version= "2.0">
+  <channel>
+  	{% for post in posts|slice:":10" %}
+    <item>
+      <title>{{post.title}}</title>
+      <description>
+        {{ post.headline }}
+      </description>
+      <link>http://chris.eidhof.nl/{{ post.path }}</link>
+    </item>
+    {% endfor %}
+  </channel>
+</rss>
