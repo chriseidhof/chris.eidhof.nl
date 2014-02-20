@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section id="wrapper">
+  <header id="header">
+  <a href="/" id="title">
+  <img src="{% static 'images/logo.png' %}" style="width: 2em">
+  </a>
+  </header> <!--header-->
+  {% filter markdown %} 
+  I'm Chris Eidhof. Dutch, and living in Berlin.
+  
+  I build iOS and Mac apps, such as [Deckset](http://www.decksetapp.com). It's a Mac app that lets you create beautiful presentations, straight from Markdown.
+  
+  In 2013, I started [objc.io](http://objc.io), a magazine for iOS developers. Every month, we release a new issue with a different topic.
+  Also, that year I organized the first edition of [UIKonf](http://www.uikonf.com). It's an independent conference for serious iOS developers, in Berlin. I sometimes speak at conferences, [here](https://github.com/chriseidhof/speaking)'s an incomplete list of my recent talks.
+
+  Write to me: chris@*my lastname*.nl.
+  {% endfilter %}
+  
+  {% block footer %}
+  <footer id="footer">
+  <p class="small">Made in Berlin, by <a href="http://www.twitter.com/chriseidhof/">@chriseidhof</a>.</p>
+  </footer>
+  {% endblock footer %}
+</section> <!--wrapper-->
+{% endblock content %}
+
