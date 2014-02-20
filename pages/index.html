@@ -3,8 +3,9 @@
 
 <section id="wrapper">
   <header id="header">
-  <a id="title" class="index">Chris Eidhof</a>
+  <a id="title" class="index">
   <img src="{% static 'images/logo.png' %}" style="width: 2em">
+  </a>
   </header> <!--header-->
   
   <ul id="post-list">
@@ -21,6 +22,12 @@
     <a id="archive-link" href="archive.html"> <span class="arrow">&larr;</span> Older posts</a>
   </footer>
   {% endif %}
+
+  <footer id="about-me">
+  {% filter markdown %} 
+  I'm Chris Eidhof. I build iOS and Mac apps, such as [Deckset](http://www.decksetapp.com). I created [objc.io](http://objc.io) and [UIKonf](http://www.uikonf.com). More [about me](/about.html).
+  {% endfilter %}
+  </footer>
   
   {% block footer %}
   <footer id="footer">

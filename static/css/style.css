@@ -89,7 +89,8 @@ p a { color:#5694f1; }
 /*Transitions*/
 a,
 #post-nav a,
-#post-list a	{ 
+#post-list a
+{ 
 	-webkit-transition: all 0.15s ease;
 	-moz-transition: all 0.15s ease;
 	-ms-transition: all 0.15s ease;
@@ -233,7 +234,11 @@ img {
 Post List
 =========================================== */
 #post-list,#archive-list {
-	margin-top:100px;
+	margin-top:0px;
+}
+
+#header {
+	margin-bottom:100px;
 }
 
 #post-list li,#archive-list li {
@@ -266,6 +271,10 @@ Post List
 #post-list-footer {
 	border-top:1px solid #eee;
 	margin-top:20px;
+	padding-top:100px;
+}
+
+#about-me {
 	padding-top:100px;
 }
 
@@ -437,6 +446,10 @@ h2.month {
 
 #header img {
   float: right;
+}
+
+#header a:hover img {
+  opacity: 0.8;
 }
 
 /*=====================*/
