@@ -1,5 +1,5 @@
-# Cactus Example Blog
+# My blog
 
-This is an example blog project for [Cactus](https://github.com/koenbok/Cactus). It provides a starting point for your own blog. Just download it, make sure you have [Cactus](https://github.com/koenbok/Cactus) installed and run `cactus serve`.
+This is a blog that uses[Cactus](https://github.com/koenbok/Cactus). Just download it, make sure you have [Cactus](https://github.com/koenbok/Cactus) installed and run `cactus serve`.
 
-You can see it running [here](http://cactus-example-blog.s3-website-us-east-1.amazonaws.com/).
+The production version is online at [chris.eidhof.nl](http://chris.eidhof.nl). Feel free to make pull requests!
