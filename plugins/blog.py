@@ -2,19 +2,15 @@ import os
 import datetime
 import logging
 
+from django.template import Context
+from django.template.loader import get_template
+from django.template.loader_tags import BlockNode, ExtendsNode
+
 Global = {"config": {}, "posts": []}
 
 Global["config"]["path"] = "posts"
 Global["config"]["date_format"] = "%d-%m-%Y"
-
-def _convertDate(date_string, path):
-	try: 
-		return datetime.datetime.strptime(date_string, 
-			Global["config"]["date_format"])
-	except Exception, e:
-		logging.warning("Date format not correct for page %s, should be %s\n%s" \
-			% (path, Global["config"]["date_format"], e))
-
+Global["config"]["post_body_block"] = "body"
 
 def preBuild(site):
 	
@@ -48,6 +44,11 @@ def preBuild(site):
 					else:
 						context_post[field] = context[field]
 
+			context_post["body"] = _get_node(
+				get_template(page.path), 
+				context=Context(context_post), 
+				name=Global["config"]["post_body_block"])
+
 			Global["posts"].append(context_post)
 
 	# Sort the posts by date and add the next and previous page indexes
@@ -70,3 +71,20 @@ def preBuildPage(site, page, context, data):
 			context.update(post)
 	
 	return context, data
+
+def _get_node(template, context=Context(), name='subject'):
+	# Get the contents of a block in a specific template
+	for node in template:
+		if isinstance(node, BlockNode) and node.name == name:
+			return node.render(context)
+		elif isinstance(node, ExtendsNode):
+			return _get_node(node.nodelist, context, name)
+	raise Exception("Node '%s' could not be found in template." % name)
+
+def _convertDate(date_string, path):
+	try: 
+		return datetime.datetime.strptime(date_string, 
+			Global["config"]["date_format"])
+	except Exception, e:
+		logging.warning("Date format not correct for page %s, should be %s\n%s" \
+			% (path, Global["config"]["date_format"], e))

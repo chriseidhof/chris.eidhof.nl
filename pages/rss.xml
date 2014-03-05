@@ -1,14 +1,19 @@
-<?xml version= "1.0"?>
+<?xml version= "1.0" encoding="utf-8"?>
 
 <rss version= "2.0">
   <channel>
+    <title>Chris Eidhof</title>
+    <description>The personal blog of Chris Eidhof</description>
+    <link>http://www.eidhof.nl</link>
   	{% for post in posts|slice:":10" %}
+    
     <item>
-      <title>{{post.title}}</title>
+      <title>{{post.title}} - {{ post.headline }}</title>
       <description>
-        {{ post.headline }}
+        {{post.body|force_escape}}
       </description>
       <link>http://chris.eidhof.nl/{{ post.path }}</link>
+      <guid>http://chris.eidhof.nl/{{ post.path }}</guid>
     </item>
     {% endfor %}
   </channel>
