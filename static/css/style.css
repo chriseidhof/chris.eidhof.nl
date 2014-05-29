@@ -178,10 +178,15 @@ hr {
 	background: #f4f4f4;
 }
 
-span.code { font-family:Menlo, Monaco, Courier; background-color:#EEE; font-size:14px; }
+code, span.code {
+  font-family:Menlo, Monaco, Courier;
+   font-size:14px; 
+}
 
-pre	{ font-family:Menlo, Monaco, Courier; white-space:pre-wrap; border: 1px solid #ddd; padding:20px; 
-background-color:#fdfdfd; font-size:14px;  overflow:auto; border-radius: 3px;
+span.code {  background-color:#EEE; }
+
+pre	{ font-family:Menlo, Monaco, Courier; border: 1px solid #ddd; padding:20px; 
+background-color:#fdfdfd; font-size:14px;  overflow:scroll; border-radius: 3px;
 }
 
 table {

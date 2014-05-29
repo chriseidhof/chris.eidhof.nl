@@ -6,7 +6,7 @@ headline: An experiment in Ultralight View Controllers
 {% block body %}
 {% filter markdown %}
 
-I'm a big fan of lighter view controllers. In the [first issue]() of objc.io, I wrote an article about it. Since then, I've given a couple of talks about it. Most of the things you can do are very straightforward once you know them, and people seem to generally like it. However, a couple of months ago, I read a [great blogpost](http://bendyworks.com/geekville/articles/2014/2/single-responsibility-principle-ios) explaining how to take the notion of 'lighter view controllers' up a notch. I tried to take the idea, and apply it to a very simple example app.
+I'm a big fan of lighter view controllers. In the [first issue]() of objc.io, I wrote an article about it. Since then, I've given a couple of talks about it. Most of the things you can do are very straightforward once you know them, and people seem to generally like it. However, a couple of months ago, I read a [great blogpost](http://bendyworks.com/single-responsibility-principle-ios/) explaining how to take the notion of 'lighter view controllers' up a notch. I tried to take the idea, and apply it to a very simple example app.
 
 <img src="/static/images/person-app.png" style="width:217px; float: right; overflow: clear;">
 
@@ -105,6 +105,8 @@ We set it's class to `DismissOnEnterIntention`:
 
 Now, we can go to the textfield, and change it's delegate and drag it to our new class (we have to make sure that the class declares that it implements the `UITextFieldDelegate` protocol, for example in the class extension).
 And that's all there is to it. When the view controller is loaded, the storyboard will create a `DismissOnEnterIntention` object and hook it up. Of course, having an extra object just to dismiss on enter seems a bit tedious. But think about it: how often have you implemented this yourself in a view controller? If you put this object in your own standard library, you never have to implement it again, but can instead just reuse it.
+
+*Update*: [Several](https://twitter.com/toco91/status/456102320649293824) [people](https://twitter.com/christian_beer/status/456134551941566464) on Twitter point out you can use `textFieldShouldReturn:` instead, which is of course a lot better.
 
 ### Uppercase a Name
 
