@@ -1,0 +1,38 @@
+date: 14-07-2014
+title: Functional Programming in Swift
+headline: We're writing a book
+
+{% extends "post.html" %}
+{% block body %}
+{% filter markdown %}
+
+A few weeks ago, after Apple announced their new programming language Swift, it
+became very clear to me that we had to write a book on [Functional Programming
+in Swift](http://www.objc.io/books/). Once the idea was there, I just couldn't stop
+thinking about it anymore. After getting [Wouter](http://www.staff.science.uu.nl/~swier004/) and [Florian](http://floriankugler.com) on board, I knew we had a killer team for writing this book.
+
+We decided to do give people early access, so they can read along and comment
+as we proceed with the writing. So far, the response has been really great, and I'm really happy that we chose to do this. It works like this: after people buy the early access version, we immediately grant them access to a GitHub repository where they can read and comment on the chapters we've written so far.
+
+One of the things I only realized after we started: if we do this right, we
+might write a book that is still relevant in 5 or 10 years. The book is not
+about any specific frameworks, it's about doing functional programming. 
+Frameworks might change a lot, the principles of functional programming have been the same for a really long time.
+Because we write our chapters using [literate
+programming](https://github.com/chriseidhof/literate-swift) it's very easy for
+us to update them later on as the language evolves.
+
+After we brainstormed a lot of ideas (way more than we could possibly fit into
+one book) we picked the best ones, and starting writing chapter outlines and example
+code. I'm so excited about some of the examples we'll show you: they make
+things that were previously complex now very simple. Functional programming can
+be like that: making certain programs smaller by a huge factor.
+
+What I love about Swift is that it allows us to mix functional and
+object-oriented programming. We can keep doing all the great stuff that we
+know, we can keep using all of Apple's great APIs, but at the same time we can
+write parts of our program in a functional style. This book will hopefully show
+you examples where the functional style is way more powerful.
+
+{% endfilter %}
+{% endblock body %}
