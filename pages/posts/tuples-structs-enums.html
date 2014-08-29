@@ -1,0 +1,109 @@
+date: 29-08-2014
+title: Tuples, Structs and Enums
+headline: What are the differences?
+
+{% extends "post.html" %}
+{% block body %}
+{% filter markdown %}
+
+Swift has lots of different ways of storing your data. You can use enums, tuples, structs, classes (or even just use malloc and manage it yourself)! In this article, we'll compare enums, tuples and structs. Let's start with the simplest: tuples.
+
+A tuple is a typed list of values. For example, you can define a tuple that holds an integer and a string:
+
+    let amount = (100, "EUR")
+
+This is very useful when you want to return multiple values from a function. To get the values out, you can use `.0`, `.1` (and so on), or pattern matching. For example:
+
+    let currency = money.1 // "USD"
+
+If you want to, you can also name the individual elements, to have a bit more documentation:
+
+    let money = (amount: 100, currency: "USD")
+
+Now, you can still use `.1`, but alternatively, you can also use `.currency`:
+
+    let currency = money.currency // "USD"
+
+If we want to write a formatter for currencies, we can now do that:
+
+    func format(input: (Int,String)) -> String {
+        return "I have \(input.0) \(input.1) in my wallet"
+    }
+    
+    println(format(money)) // This prints "I have 100 USD in my wallet"
+
+Our format function works on any `(Int,String)` tuple:
+
+    let mass = (1, "kg")
+
+    let formatted = format(mass) // "I have 1 kg in my wallet"
+
+Clearly, having 1 kg in your wallet doesn't make sense. Therefore, let's introduce a struct. A struct can hold exactly the same kind of a data as a tuple. In addition, you can also define functions on the struct itself (whereas with tuples, you can only define top-level functions). Let's consider the following struct:
+
+    struct Money {
+        let amount: Int
+        let currency: String
+    }
+    
+    let wallet = Money(amount: 100, currency: "USD")
+
+This can hold exactly the same kind of data as a tuple, but now we can also define a function on it:
+
+    extension Money {
+      func format() -> String {
+        return "I have \(self.amount) \(self.currency) in my wallet"
+      }
+    }
+    
+    println(wallet.format())
+
+If we want to make a distinctive type for mass, we can now do that:
+
+    struct Mass {
+        let quantity: Int
+        let unit: String
+        
+        func format() -> String {
+            return "I have \(self.quantity) \(self.unit) in my backpack."
+        }
+    }
+
+Not only do we now have functions on our `Money` type, we also have given it an explicit name. In other parts of our code, we can be certain that we don't accidentally pass in a mass pair (like `(1, "kg")`). A struct is also called a [nominal type](http://en.wikipedia.org/wiki/Nominal_type_system): it gives an explicit name to a type, and values only have the same type if they share that name. In the example above, `mass` and the first definition of `wallet` have the same type, but values of type `Money` and `Mass` have different types. If we call `format` on them, we get different results.
+
+### Enums
+
+If we want to store some values together, we now know that we can use a tuple or a struct, depending on the use-case. We can also use classes, but that's beyond the scope of this article. However, sometimes we want to represent a choice between some values. For example, let's consider currencies. In the previous example, we've used `String` to use the currency, but what if we want to restrict our program to only currencies we know about? This is where we can use an enum. For example, if we want to restrict our program to only euros, US dollars and yen, we can write the following enum:
+
+    enum Currency {
+       case EUR
+       case USD
+       case YEN
+    }
+
+Now, if we have a value of type `Currency`, we know that it will be either `EUR`, `USD` or `YEN`. There is no way it can be of any other value, or multiple of these values at the same time. Just like with structs, you can also define functions on enums:
+
+    extension Currency {
+        func symbol() -> String {
+            switch self {
+                case .EUR: return "€"
+                case .USD: return "$"
+                case .YEN: return "¥"
+            }
+        }
+    }
+
+We can add as many cases as we want. However, we could also have an enum with a single case:
+
+    enum Angle {
+       case .Radian(radians: Double)
+    }
+
+This is equivalent to having a struct: we can add functions, and it is impossible to accidentally confuse `Angle` values with other `Double` values. However, if we decide that we want to add more cases in the future, we can do this.
+
+
+### What should I use?
+
+Now we have a good overview of how to choose between tuples, structs and enums. Start with a tuple and see if it does the job. If two values with the same type structure are the same (e.g. String and Int pairs), excellent. If you want more type-safety and a nominal type, use structs. For example, if you want to disambiguate between currency and mass. Finally, if you need multiple mutually exclusive cases (for example, either EUR or USD or YEN), use enums.
+
+{% endfilter %}
+{% endblock body %}
