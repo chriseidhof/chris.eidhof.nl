@@ -95,7 +95,7 @@ Now, if we have a value of type `Currency`, we know that it will be either `EUR`
 We can add as many cases as we want. However, we could also have an enum with a single case:
 
     enum Angle {
-       case .Radian(radians: Double)
+       case Radian(radians: Double)
     }
 
 This is equivalent to having a struct: we can add functions, and it is impossible to accidentally confuse `Angle` values with other `Double` values. However, if we decide that we want to add more cases in the future, we can do this.
