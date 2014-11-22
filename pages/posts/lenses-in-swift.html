@@ -1,0 +1,85 @@
+date: 11-11-2014
+title: Lenses in Swift
+headline: Combining getters and setters for great glory
+
+{% extends "post.html" %}
+{% block body %}
+{% filter markdown %}
+
+This is another FP-inspired blogpost, this time about lenses. There's [a lot of
+literature](http://www.cis.upenn.edu/~bcpierce/papers/index.shtml#Lenses)
+around lenses, but I wanted to show some simple examples.
+
+Sometimes, you have a set of data (this could be anything, from a struct to a Core Data database, or a webservice), and you want to create a view on that data. For example, suppose you have a value of type `Person`, you might want to create a view that only has a specific person's address. And from that address, you want to take the street name. Then, somewhere else in the code, you might want to update this street name, and finally, update the original `Person`. To make it concrete, let's define two datatypes `Person` and `Address` (sorry about the trailing underscores):
+
+    struct Person {
+        let name_ : String
+        let address_ : Address
+    }
+    
+    struct Address {
+        let street_ : String
+        let city_ : String
+    }
+    
+Getting a person's street name is simple: given a `person`, you can just write `person.address_.street_`. However, updating a person with a new street name is a bit more complicated. Because we defined our `Person` and `Address` as immutable structs, there's no simple way. With mutable code, we could have just changed the values.
+
+In Objective-C, we could have used key-value coding, and the keypath `"address_.street_"` can be used both for getting the street out (using `valueForKey:`), and for updating the street (using `setValue:forKey:`). In Swift, this is generally not possible.
+
+This is where lenses come in. A lens is simply the combination of a getter (e.g. getting the address out of a person) and a setter (a function that, given a person and a changed address, creates a new person value with the updated address). In code, it looks like this:
+
+    struct Lens<A,B> {
+        let from : A -> B
+        let to : (B, A) -> A
+    }
+
+For example, the lens for `address_` consists of a function that takes the `address_` out, and a function creating a new person with the original name (`$1` is the original value), but the updated address:
+
+    let address : Lens<Person,Address> = Lens(from: { $0.address_ }, to: {
+        Person(name_: $1.name_, address_: $0)
+    })
+
+Likewise, we can write a lens for the address's `street_` property:
+
+    let street : Lens<Address,String> = Lens(from: { $0.street_ }, to: {
+        Address(street_: $0, city_: $1.city_)
+    })
+
+Now, if we want to change an address's street, we can use the following syntax:
+
+    let newAddress = street.to("My new street name", existingAddress)
+
+Without lenses, the code would have looked like this:
+
+    let newAddress = Address(street_: "My new street name", city_: existingAddress.city)
+
+In a way, it looks like we might not have gained much. But there is something really cool we can do: composing lenses! If you've been following our [functional snippets](http://www.objc.io/snippets/2.html), you've already seen function composition. We can write a similar composition operator for lenses. When reading this, don't focus on the implementation, but just look at the type: it takes a lens from A to B, and a lens from B to C, and composes them into a new lens from A to C.
+
+    func >>><A,B,C>(l: Lens<A,B>, r: Lens<B,C>) -> Lens<A,C> {
+        return Lens(from: { r.from(l.from($0)) }, to: { (c, a) in
+            l.to(r.to(c,l.from(a)), a)
+        })
+    }
+
+Now, we can use this to compose the `address` and `street` lenses:
+
+    let personStreet = address >>> street
+
+We can use the getter:
+
+    let robb = Person(name_: "Robb", address_: Address(street_: "Alexanderplatz", city_: "Berlin"))
+    let robbsStreet = personStreet.from(robb)
+    // Evaluates to "Alexanderplatz"
+
+Or the setter:
+
+    let robb2 = personStreet.to("Kottbusser Damm", robb)
+    // Creates a new `Person` with an updated street
+
+
+So in a way, this `address >>> street` is similar to the keypath `"address_.street_"`, except that it's fully typed.
+
+There's a lot more cool stuff that you can do with lenses, but that's for a later post. One idea: this could be very useful when applied to the [ViewModel](http://www.objc.io/issue-13/mvvm.html) pattern. You could have an immutable model X, create a lens to a mutable ViewModel Y that you pass around, and then once you're done, you can update the original model X with the new value in Y. In order to build that, you would need a bit more infrastructure around lenses (just function composition won't be enough), but we can just look at [existing implementations](http://hackage.haskell.org/package/fclabels) and port that to Swift.
+
+{% endfilter %}
+{% endblock body %}

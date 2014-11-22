@@ -106,7 +106,7 @@ We can use the [JSON parsing](/posts/json-parsing-in-swift.html) technique to wr
         return jsonResource("user", .GET, [:], parseGithubProfile)
     }
 
-For me, this is the power functional programming. We wrote one `apiRequest` function and one `Resource` datatype, and never changed it again. We can provide this in a library. We then created a couple of small functions for encoding and decoding JSON, and wrapped the existing functions to create our own convenience functions. The `authenticatedUser` is now very tiny.
+For me, this is the power of functional programming. We wrote one `apiRequest` function and one `Resource` datatype, and never changed it again. We can provide this in a library. We then created a couple of small functions for encoding and decoding JSON, and wrapped the existing functions to create our own convenience functions. The `authenticatedUser` is now very tiny.
 
 As a final step, we'll wrap the `apiRequest` function in a new function that's tied to the Github API. It sets the authorization token, and provides the base URL. The completion handler is called only in case of success:
 
