@@ -1,0 +1,87 @@
+date: 10-01-2015
+title: Repmin in Swift
+headline: Combining Tree Traversals
+
+{% extends "post.html" %}
+{% block body %}
+{% filter markdown %}
+
+This might be my most obscure functional programming post yet.
+
+Yesterday, I attended the Dutch Functional Programming Day, and it was very nice to see many old friends. [Doaitse](http://foswiki.cs.uu.nl/foswiki/Swierstra/WebHome)'s talk was about different solutions to the repmin problem (and related problems). Repmin is a slightly obscure problem (but famous amoung a small group of functional programmers): 
+
+*Given a binary tree with integers at the leaves, replace each leave's value by the minimum value in the tree.*
+
+For example, given the following tree:
+
+    (1 2) (3 (4 5))
+
+The result would be:
+
+    (1 1) (1 (1 1))
+
+The simplest solution would take two steps: in step 1, we iterate over the tree, finding the minimum value. In step 2, we iterate over the tree again, replacing every leaf with the minimum value. Let's build that. In Swift, we can define a tree like this:
+
+    enum Tree {
+        case Node(Tree, Tree)
+        case Leaf(Int)
+    }
+
+Finding the minimum is simple, in case of a leaf we return the leaf's value, in case of a node we return the minimum of both branches:
+
+    func minimum(t: Tree) -> Int {
+        switch t {
+        case let .Node(l, r):
+            return min(minimum(l), minimum(r))
+        case .Leaf(let x):
+            return x
+        }
+    }
+
+For replacing, we can write another function:
+
+    func replaceAllLeaves(t: Tree, newValue: Int) -> Tree {
+        switch t {
+        case .Node(let l, let r):
+            return .Node(replaceAllLeaves(l, newValue), replaceAllLeaves(r, newValue))
+        case .Leaf(_):
+            return .Leaf(newValue)
+        }
+    }
+
+Now, we can write our solution like this:
+
+    repmin = { tree in replaceAllLeaves(tree, minimum(tree)) }
+
+We compute the minimum of `tree` and then replace all values in the leaves with that result, and everything is fine. However, in 1984, Richard Bird came up with [a solution](http://link.springer.com/article/10.1007/BF00264249#page-1) that uses a single inspection. In a single pass, we compute both the minimum of a tree, and a function that, given the minimum, returns the new tree. That function looks like this:
+
+
+    func repMinHelper(t: Tree) -> (Int, Int -> Tree) {
+        switch t {
+        case .Node(let l, let r):
+            let (lMin, lBuild) = repMinHelper(l)
+            let (rMin, rBuild) = repMinHelper(r)
+            return (min(lMin,rMin), 
+                    { x in .Node(lBuild(x), rBuild(x)) })
+        case .Leaf(let value):
+            return (value, { x in .Leaf(x) })
+        }
+    }
+
+Then, we can solve the repmin problem by creating a new function `repMin` that wraps the helper:
+
+    func repMin(t: Tree) -> Tree {
+        let (min, builder) = repMinHelper(t)
+        return builder(min)
+    }
+
+This is pretty cool: in a single inspection, we compute both the minimum value and a function to build the new tree. This relates strongly to [attribute grammars](http://en.wikipedia.org/wiki/Attribute_grammar): we can think of the minimum as a synthesized attribute, and the new tree uses that synthesized attributed as an inherited attribute.
+
+In a way, it also reminds me of [transducers](https://github.com/mbrandonw/learn-transducers-playground): transducers combine multiple functions that operate on lists, but compute everything using a single pass. The technique above is a little bit similar, but for tree-structures. I can't really see a useful way to apply this in my production code, but it's an interesting exercise nonetheless.
+
+The full code is [available as a gist](https://gist.github.com/chriseidhof/6b4d1c8a542003d60cb9), and uses `Box` to work around Swift's limitations with recursive enums.
+
+
+
+{% endfilter %}
+{% endblock body %}
