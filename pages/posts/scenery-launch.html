@@ -1,0 +1,27 @@
+date: 24-03-2015
+title: Swift in Production: Scenery
+headline: We shipped our new app
+
+{% extends "post.html" %}
+{% block body %}
+{% filter markdown %}
+
+Today, we shipped our first Swift app completely written in Swift: [Scenery](https://www.getscenery.com). From our press release:
+
+> Scenery is the Mac app that makes your app or website designs look instantly beautiful and professional, by putting them in context – placed into smartphones, tablets, laptops, and more – in stunningly-photographed scenes.
+
+<img src="https://www.getscenery.com/gallery/video.png" />
+
+It's been a very interesting experience, because all iOS and Mac apps we've built before were done using Objective-C. In the beginning, we spent a lot of time waiting for the compiler, but the stability and speed of the tooling has improved a lot in recent releases, so we hardly ever have issues anymore. Even when you take the time spent waiting on the compiler into account, I think we were still writing better code at a higher speed than with Objective-C.
+
+The code base we ended up with makes me much happier than most Objective-C code bases I've seen. Having Swift's type-safety greatly improves my trust in refactorings: I feel free to change a function's type, add parameters or change parameter types. I know that the compiler will help me catch any type-related errors. We use a lot of functional patterns: [tiny networking](http://chris.eidhof.nl/posts/tiny-networking-in-swift.html), [typed observers](http://www.objc.io/snippets/16.html), [configuration values](http://www.objc.io/snippets/20.html), [wrapper types](http://www.objc.io/snippets/8.html), and the list goes on. Many of the snippets we published over at [objc.io](http://www.objc.io) come from our Scenery code base.
+Another really big win was the ability to use enums. Creating a new enum is very simple, and comes at no runtime cost, yet gives us a lot better readability and maintainability. 
+
+Finally, we use a lot of tiny functions that help us compose functionality out of short and understandable pieces. 
+Our app uses two frameworks: UIShared, which has reusable code that's unrelated to Scenery, and SceneryShared, which has a lot of our domain logic. The app itself is very lean.  This means that the stateful parts of our app are quite contained (in the app itself), and that most of our code is stateless and thus easier to maintain and understand.
+
+So, when people ask me whether Swift is ready for production, for me the answer is a resounding yes. It's served us very well, and it keeps getting better, faster and easier. And the best thing: this is only the beginning of the Swift journey, if the language keeps improving at this pace, the future will be very bright indeed.
+
+{% endfilter %}
+{% endblock body %}
+
