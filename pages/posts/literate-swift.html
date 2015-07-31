@@ -1,0 +1,37 @@
+date: 31-07-2015
+title: Literate Swift
+headline: A Tool for Writing Swift and Markdown
+
+{% extends "post.html" %}
+{% block body %}
+{% filter markdown %}
+
+Last year, when we started writing [Functional Programming in Swift](http://www.objc.io/books/fpinswift/), we realized that the language would change every few weeks. We didn't anticipate the pace, but we were ready for change. Rather than manually updating every article, we used a technique called [literate programming](https://en.wikipedia.org/wiki/Literate_programming). In literate programming, you write the code and text at the same time. The code in the text can be executed. To do this, we wrote a small utility called Literate Swift.
+
+For our two new books, [Core Data](http://www.objc.io/books/core-data/) and [Advanced Swift](http://www.objc.io/books/advanced-swift/), we are using the same technique, except with a newer version of the tool. Literate Swift is a library (and comes with a GUI or command-line tool) that takes a Markdown file, extracts all the code blocks marked with `swift`, and compiles those. The awesome thing about it is that you can compile your Markdown: you can statically check that the code in your blog posts (or in our case, our books) is correct.
+
+Not only does it compile the code blocks marked as Swift, it also takes code blocks marked as `print-swift`, and replaces them by the code *and* the result of executing that code. For example, the following block after running it through Literate Swift:
+
+    ```print-swift
+    (1..<10).reduce(0, combine: +)
+    ```
+
+Will get replaced by the following block:
+
+    ```swift
+    (1..<10).reduce(0, combine: +)
+    > 45
+    ```
+
+We support just highlighting code by marking a block as `highlight-swift`. This way, it gets highlighted, but not compiled (which is also a danger, because that code might easily get outdated).
+
+Finally, sometimes you just want to work in a Swift file. For this, we support embeds. If you have the following block, Literate Swift will look at all Swift files in that directory (and all its subdirectories, recursively), and see if there are lines that are surrounded by `// <<MySnippet>>` and `// <</MySnippet>>`, and embed the contents of that into the output (without executing it). This way, you can write separate Swift files that are easy to edit using Xcode and still make sure it gets embedded into the output.
+
+    ```highlight-swift
+    <<MySnippet>>
+    ```
+
+The Literate Swift tool can currently generate a number of outputs: HTML, Markdown and LaTeX. The [GUI tool](https://github.com/chriseidhof/LiterateSwiftGUI) renders the HTML directly into a web view, which is great for previewing while writing. It also has tabs for Markdown, Playground syntax and just the Swift code (for easy copy-pasting). The entire tool chain is still very immature (and a bit hacky at some points), but it has proven to be a great help during writing already. It should also be very simple to integrate this into blogging workflows, and other publishing formats.
+
+{% endfilter %}
+{% endblock body %}
