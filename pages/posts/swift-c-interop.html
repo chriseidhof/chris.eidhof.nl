@@ -35,7 +35,7 @@ And here is a wrapper function that uses `qsort` to sort an array of Swift strin
 
 Let's look at each of the arguments being passed to `qsort`:
 
- - A pointer to the base of the array. Swift arrays automatically convert to C-style base pointers when you pass them into a function that takes an `UnsafePointer`. We use the `&` prefix because it is an `UnsafeMutablePointer` (in the C declaration, a `void *base`). If the function dind't need to mutate its input so declared in C as `const void *base`, the `&` wouldn't be needed. This matches the difference with `inout` arguments in Swift functions.
+ - A pointer to the base of the array. Swift arrays automatically convert to C-style base pointers when you pass them into a function that takes an `UnsafePointer`. We use the `&` prefix because it is an `UnsafeMutablePointer` (in the C declaration, a `void *base`). If the function didn't need to mutate its input so declared in C as `const void *base`, the `&` wouldn't be needed. This matches the difference with `inout` arguments in Swift functions.
  - The number of elements. This one is easy, just the count property of the array.
  - To get the width of each element, we use `strideof` – _not_ `sizeof`.  In Swift, `sizeof` returns the true size of a type, but when locating elements in memory, platform alignment needs might mean the gap between each element (the "stride") could be the size _plus_ some padding.  In case of strings they will be the same, but when dealing with some types (specific structs and enums), `sizeof` doesn't include the memory padding, and `strideof` does. 
   - For the `compar`, we can just pass in a trailing closure expression (as long as it doesn't capture any variables).  The `compar` function accepts two void pointers. A C void pointer can be a pointer to anything: the first thing to do is cast it to a pointer to the actual type you (hope) it is. In the case of `qsort`, the they will be to elements in the array, pointers to two Swift strings. Finally, the function needs to return an `Int32`: if the first element is greater than the second, it should be larger than 0, if they're equal, 0, and if it's small a number, less than zero.
@@ -71,14 +71,14 @@ Next, we want to create an unsafe mutable void pointer out of this. We can take 
 
 We can pass that pointer around. Finally, once we are done, we want to make sure to release the reference again:
 
-    unmanaged.takeRetainedValue()
+    unmanaged.release()
 
 To make sure we don't make any mistakes with retains and releases, we can wrap this up in a function. This function takes a value of any type, and a callback function which performs a computation with the void pointer. By using a callback function, we can make sure to release our object after we are done. The moment the callback returns, the value is released. Therefore, this is only safe to use when the void pointer is not stored somewhere, or used asynchronously.
 
     func withVoidPointer<A>(x: A, @noescape f: UnsafeMutablePointer<Void> -> ()) {
         let unmanaged = Unmanaged.passRetained(Box(x))
         f(UnsafeMutablePointer(unmanaged.toOpaque()))
-        unmanaged.takeRetainedValue()
+        unmanaged.release()
     ```
 
 As a companion function, we can also write an `unsafeFromVoidPointer`, which removes all the wrapping we added in the previous function. It uses `takeUnretainedValue` to make sure to not change the retain count when using the value.
